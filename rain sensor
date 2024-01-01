@@ -1,0 +1,50 @@
+#include <Servo.h>
+
+// Pin assignments
+const int rainSensorPin = A0;  
+const int servoMotorPin = 9;   
+Servo rainServo;              
+
+// Bluetooth module
+const int bluetoothTx = 10;   
+const int bluetoothRx = 11;   
+
+void setup() {
+  Serial.begin(9600);  // Start serial communication
+  rainServo.attach(servoMotorPin);  
+
+  // Set Bluetooth communication
+  Serial1.begin(9600);
+}
+
+void loop() {
+  // Read the value from the rain sensor
+  int rainValue = analogRead(rainSensorPin);
+
+  // Map the sensor value to servo motor angles (adjust as needed)
+  int servoAngle = map(rainValue, 0, 1023, 0, 170);
+
+  // Move the servo motor based on rain sensor data
+  moveServo(servoAngle);
+
+  // Check for Bluetooth signals
+  checkVoiceCommands();
+}
+
+void moveServo(int angle) {
+  rainServo.write(angle);  // Move the servo to the specified angle
+  delay(500);              // Delay for stability (adjust as needed)
+}
+
+void checkVoiceCommands() {
+  if (Serial1.available() > 0) {
+    String voiceCommand = Serial1.readStringUntil('\n');  // Read the Bluetooth voice command
+
+    // Process the voice command
+    if (voiceCommand.indexOf("bring") != -1) {
+      moveServo(180);  
+    } else if (voiceCommand.indexOf("put") != -1) {
+      moveServo(0);  
+    }
+   }
+  }
